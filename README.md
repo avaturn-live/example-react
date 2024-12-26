@@ -37,9 +37,9 @@ The project demonstrates the integration of the Avaturn Live Web SDK in a React 
 
 3. Create a `.env.local` file in the project root and add the following environment variable:
    ```env
-   NEXT_PUBLIC_AVATURN_LIVE_TOKEN=your_aveturn_live_token
+   NEXT_PUBLIC_AVATURN_LIVE_TOKEN=your_avaturn_live_token
    ```
-   Replace `your_aveturn_live_token` with your token obtained via the Avaturn Live dashboard.
+   Replace `your_avaturn_live_token` with your token obtained via the Avaturn Live dashboard.
 
 ## Running the Application
 
