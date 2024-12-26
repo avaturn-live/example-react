@@ -12,7 +12,7 @@
     "deploy": "npm run pages:build && wrangler pages deploy"
   },
   "dependencies": {
-    "@avaturn-live/web-sdk": "^0.0.22",
+    "@avaturn-live/web-sdk": "^0.1.2",
     "@cloudflare/next-on-pages": "^1.13.2",
     "axios": "^1.7.4",
     "classnames": "^2.5.1",

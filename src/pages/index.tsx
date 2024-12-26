@@ -22,7 +22,7 @@ export default function Home() {
   });
   const [isLoading, setIsLoading] = useState(false);
   const avatar = useRef<AvaturnHead | null>(null);
-  const videoRef = useRef<HTMLVideoElement>(null);
+  const videoRef = useRef<HTMLDivElement>(null);
   const [text, setText] = useState("");
   const [inited, setInited] = useState(false);
   const openai = useOpenAI(settings?.gptKey || null, {
@@ -51,10 +51,18 @@ export default function Home() {
   useEffect(() => {
     if (!avatar.current) {
       axios.get<SessionData>("api/session/new").then(({ data }) => {
-        avatar.current = new AvaturnHead({
+        if (!videoRef.current) return;
+
+        avatar.current = new AvaturnHead(videoRef.current, {
           sessionToken: data.session_token,
           apiHost: "https://api.avaturn.live",
           preloadBundle: true,
+        });
+        avatar.current.on("init", () => {
+          console.log("avatar inited");
+        });
+        avatar.current.on("avatar_ended_speaking", () => {
+          console.log("avatar_ended_speaking");
         });
       });
     }
@@ -64,8 +72,6 @@ export default function Home() {
     if (!avatar.current || avatar.current?.inited) return;
 
     return avatar.current.init().then(() => {
-      if (!videoRef.current || !avatar.current) return;
-      videoRef.current.srcObject = avatar.current.mediaStream;
       setInited(true);
     });
   };
@@ -89,10 +95,9 @@ export default function Home() {
           style={{ right: "initial", top: "initial" }}
           alt="avatar"
         />
-        <video
+        <div
           ref={videoRef}
           className="z-10 object-cover object-bottom absolute w-full h-full"
-          autoPlay
         />
         <div className="absolute bottom-0 left-0 h-[15%] w-full z-20 bg-gradient-to-t from-white to-transparent"></div>
       </div>
