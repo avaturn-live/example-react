@@ -9,6 +9,7 @@ import { TokenPopup } from "@/components/token-popup";
 import axios from "axios";
 import cn from "classnames";
 import { useAppHeight } from "@/hooks/use-app-height.hook";
+import randomColor from "randomcolor";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -20,11 +21,14 @@ export default function Home() {
     gptKey: "",
     mode: "echo",
   });
+  const [viewMode, setViewMode] = useState<"full" | "pip">("full");
   const [isLoading, setIsLoading] = useState(false);
   const avatar = useRef<AvaturnHead | null>(null);
   const videoRef = useRef<HTMLDivElement>(null);
+  const modalRef = useRef<HTMLDivElement>(null);
   const [text, setText] = useState("");
   const [inited, setInited] = useState(false);
+  const [modalBg, setModalBg] = useState("#fff");
   const openai = useOpenAI(settings?.gptKey || null, {
     onResponse: useCallback((message) => {
       avatar.current?.task(message);
@@ -41,7 +45,7 @@ export default function Home() {
     }
 
     if (settings.mode === "echo") {
-      avatar.current?.task(text);
+      avatar.current?.task(text).catch((_) => console.log("Cancelled error"));
     } else openai.send(text);
 
     setText("");
@@ -49,30 +53,51 @@ export default function Home() {
   };
 
   useEffect(() => {
-    if (!avatar.current) {
-      axios.get<SessionData>("api/session/new").then(({ data }) => {
-        if (!videoRef.current) return;
-
-        avatar.current = new AvaturnHead(videoRef.current, {
-          sessionToken: data.session_token,
-          apiHost: "https://api.avaturn.live",
-          preloadBundle: true,
-        });
-        avatar.current.on("init", () => {
-          console.log("avatar inited");
-        });
-        avatar.current.on("avatar_ended_speaking", () => {
-          console.log("avatar_ended_speaking");
-        });
-      });
-    }
+    const interval = setInterval(() => {
+      setModalBg(randomColor());
+    }, 2000);
+    return () => {
+      clearInterval(interval);
+    };
   }, []);
 
   const initSession = async () => {
-    if (!avatar.current || avatar.current?.inited) return;
+    if (avatar.current && avatar.current.inited) return;
 
-    return avatar.current.init().then(() => {
-      setInited(true);
+    return axios.get<SessionData>("api/session/new").then(({ data }) => {
+      if (!videoRef.current) return;
+
+      avatar.current = new AvaturnHead(videoRef.current, {
+        sessionToken: data.token,
+        apiHost: "https://api.avaturn.live",
+        preloadBundle: true,
+      });
+      avatar.current.on("init", () => {
+        console.log("avatar inited");
+      });
+      avatar.current.on("avatar_ended_speaking", () => {
+        console.log("avatar_ended_speaking");
+      });
+      return avatar.current.init().then(() => {
+        setInited(true);
+      });
+    });
+  };
+  const switchView = () => {
+    setViewMode((prev) => {
+      if (!avatar.current || !modalRef.current || !videoRef.current)
+        return prev;
+
+      avatar.current.attachDOMNode(
+        prev === "full" ? modalRef.current : videoRef.current,
+      );
+      return prev === "full" ? "pip" : "full";
+    });
+  };
+  const changeLang = () => {
+    avatar.current?.changeVoice({
+      engine: "elevenlabs",
+      voice_id: "VR6AewLTigWG4xSOukaG",
     });
   };
 
@@ -84,6 +109,27 @@ export default function Home() {
     <main
       className={`flex min-h-[--app-height] overflow-hidden flex-col bg-white items-center justify-end ${inter.className}`}
     >
+      <div
+        className={
+          "fixed bottom-5 right-5 w-80 aspect-video z-40 transition-colors"
+        }
+        style={{ background: modalBg }}
+        ref={modalRef}
+      ></div>
+      <div className="flex items-center absolute top-10 left-10 z-40 gap-2.5">
+        <button
+          onClick={switchView}
+          className="border-2 shadow rounded-md py-2 px-4"
+        >
+          Switch view
+        </button>
+        <button
+          onClick={changeLang}
+          className="border-2 shadow rounded-md py-2 px-4"
+        >
+          Change lang
+        </button>
+      </div>
       <div className="flex flex-auto w-full h-full md:max-h-full relative bg-white overflow-hidden">
         <Image
           fill

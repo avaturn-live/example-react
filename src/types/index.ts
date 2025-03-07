@@ -5,6 +5,6 @@ export type Settings = {
 };
 
 export type SessionData = {
-  session_token: string;
+  token: string;
   session_id: string;
 };

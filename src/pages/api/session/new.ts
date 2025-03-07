@@ -8,16 +8,14 @@ export default async function handler(
 ) {
   if (req.method !== "GET") return res.status(405);
   try {
-    const response = await fetch("https://api.avaturn.live/api/v1/sessions", {
+    return fetch("https://api.avaturn.live/api/v1/sessions", {
       method: "POST",
       headers: {
         Authorization: `Bearer ${process.env.NEXT_PUBLIC_AVATURN_LIVE_TOKEN || ""}`,
+        "Content-Type": "application/json",
       },
+      body: JSON.stringify({ extra: { background: "transparent" } }),
     });
-
-    const { session_id, token } = await response.json();
-
-    return Response.json({ session_token: token, session_id });
   } catch (err) {
     throw err;
   }
