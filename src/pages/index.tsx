@@ -100,6 +100,9 @@ export default function Home() {
       voice_id: "VR6AewLTigWG4xSOukaG",
     });
   };
+  const reloadConfig = () => {
+    avatar.current?.updateConfig();
+  };
 
   const initOpenAi = (token: string) => {
     setSettings((prev) => ({ ...prev, gptKey: token, mode: "openai" }));
@@ -107,11 +110,11 @@ export default function Home() {
 
   return (
     <main
-      className={`flex min-h-[--app-height] overflow-hidden flex-col bg-white items-center justify-end ${inter.className}`}
+      className={`flex min-h-screen overflow-hidden flex-col bg-white items-center justify-end ${inter.className}`}
     >
       <div
         className={
-          "fixed bottom-5 right-5 w-80 aspect-video z-40 transition-colors"
+          "fixed bottom-5 right-5 w-80 aspect-video z-40 transition-colors hidden"
         }
         style={{ background: modalBg }}
         ref={modalRef}
@@ -128,6 +131,12 @@ export default function Home() {
           className="border-2 shadow rounded-md py-2 px-4"
         >
           Change lang
+        </button>
+        <button
+          onClick={reloadConfig}
+          className="border-2 shadow rounded-md py-2 px-4"
+        >
+          Reload config
         </button>
       </div>
       <div className="flex flex-auto w-full h-full md:max-h-full relative bg-white overflow-hidden">
