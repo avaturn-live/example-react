@@ -69,8 +69,9 @@ export default function Home() {
 
       avatar.current = new AvaturnHead(videoRef.current, {
         sessionToken: data.token,
-        apiHost: "https://api.avaturn.live",
+        apiHost: "https://api.staging.avaturn.live",
         preloadBundle: true,
+        audioSource: true,
       });
       avatar.current.on("init", () => {
         console.log("avatar inited");
